@@ -1,24 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Klassen_en_events
+﻿class Tijdschrift : Boek
 {
-    class Tijdschrift : Boek
+    public Verschijningsperiode Verschijningsperiode { get; set; }
+
+    public Tijdschrift(string isbn, string naam, string uitgever, double prijs, Verschijningsperiode periode)
+        : base(isbn, naam, uitgever, prijs)
     {
-        public Verschijningsperiode Periode { get; set; }
+        Verschijningsperiode = periode;
+    }
 
-        public Tijdschrift(string isbn, string naam, string uitgever, decimal prijs, Verschijningsperiode periode)
-            : base(isbn, naam, uitgever, prijs)
-        {
-            Periode = periode;
-        }
-
-        public override string ToString()
-        {
-            return $"{base.ToString()}, Verschijningsperiode: {Periode}";
-        }
+    public override string ToString()
+    {
+        return base.ToString() + $", Verschijningsperiode: {Verschijningsperiode}";
     }
 }

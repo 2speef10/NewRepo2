@@ -1,82 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-enum Verschijningsperiode
+﻿class Bestelling<T>
 {
-    Dagelijks,
-    Wekelijks,
-    Maandelijks
-}
+    private static int volgnummerGenerator = 1;
+    public int Id { get; private set; }
+    public T Item { get; set; }
+    public DateTime Datum { get; set; }
+    public int Aantal { get; set; }
+    public Verschijningsperiode? Periode { get; set; }
 
-
-namespace Klassen_en_events
-{
-    class Bestelling <T>
-    
+    public Bestelling(T item, DateTime datum, int aantal)
     {
-        private static int volgnummerTeller = 1;
-        private decimal prijs;
-        private T item;
+        Id = volgnummerGenerator++;
+        Item = item;
+        Datum = datum;
+        Aantal = aantal;
 
-        public int Id { get; private set; }
-        public T Item
+        if (item is Tijdschrift tijdschrift)
         {
-            get { return item; }
-            set
-            {
-                if (value is Boek boek)
-                {
-                    // Zorg ervoor dat de prijs van een boek tussen 5€ en 50€ ligt
-                    if (boek.Prijs >= 5 && boek.Prijs <= 50)
-                    {
-                        item = value;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Prijs van het boek moet tussen 5€ en 50€ liggen.");
-                    }
-                }
-                else
-                {
-                    item = value;
-                }
-            }
+            Periode = tijdschrift.Verschijningsperiode;
+        }
+    }
+
+    public (string, int, double) Bestel()
+    {
+        double totalePrijs = 0;
+
+        if (Item is Boek boek)
+        {
+            totalePrijs = boek.Prijs * Aantal;
         }
 
-        public DateTime Datum { get; }
-        public int Aantal { get; }
-        public Verschijningsperiode? Periode { get; }
+        string isbn = Item is Boek ? (Item as Boek).Isbn : "";
+        return (isbn, Aantal, totalePrijs);
+    }
 
-        public Bestelling(T item, int aantal, Verschijningsperiode? periode = null)
-        {
-            Id = volgnummerTeller++;
-            Item = item;
-            Datum = DateTime.Now;
-            Aantal = aantal;
-            Periode = periode;
-        }
+    public event Action<string> BoekBesteld;
 
-        public (string ISBN, int Aantal, decimal TotalePrijs) Bestel()
-        {
-            if (Item is Boek boek)
-            {
-                decimal totalePrijs = boek.Prijs * Aantal;
-                OnBoekBesteld(boek, Aantal, totalePrijs);
-                return (boek.ISBN, Aantal, totalePrijs);
-            }
-            else
-            {
-                throw new InvalidOperationException("Kan alleen boeken bestellen.");
-            }
-        }
-
-        public event Action<Boek, int, decimal> BoekBesteld;
-
-        protected virtual void OnBoekBesteld(Boek boek, int aantal, decimal totalePrijs)
-        {
-            BoekBesteld?.Invoke(boek, aantal, totalePrijs);
-        }
+    public void BevestigBestelling()
+    {
+        BoekBesteld?.Invoke($"Bestelling {Id}: {Aantal} exemplaren van '{Item}' zijn bevestigd.");
     }
 }
